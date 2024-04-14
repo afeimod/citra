@@ -546,6 +546,10 @@ struct Values {
 
     // Hacks
     SwitchableSetting<bool> core_downcount_hack{false, "core_downcount_hack"};
+    // TODO: These hacks needs to get adapted to new config system.
+    u32 core_ticks_hack;
+    bool skip_slow_draw;
+    bool skip_texture_copy;
 
     // Video Dumping
     std::string output_format;
@@ -571,6 +575,9 @@ void LogSettings();
 
 // Restore the global state of all applicable settings in the Values struct
 void RestoreGlobalState(bool is_powered_on);
+
+// Hacks
+void SetFMVHack(bool enable);
 
 // Input profiles
 void LoadProfile(int index);

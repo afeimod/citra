@@ -254,7 +254,60 @@ System::ResultStatus System::SingleStep() {
 }
 
 static void LoadOverrides(u64 title_id) {
-    const std::array<u64, 50> accurate_mul_ids = {
+    if (title_id == 0x000400000008B400 || title_id == 0x0004000000030600 ||
+        title_id == 0x0004000000030800 || title_id == 0x0004000000030700) {
+        // Mario Kart 7
+        Settings::values.skip_texture_copy = true;
+    } else if (title_id == 0x00040000000D0000 || title_id == 0x0004000000076400 ||
+               title_id == 0x0004000000055F00 || title_id == 0x0004000000076500) {
+        // Luigi's Mansion: Dark Moon
+        Settings::values.shaders_accurate_mul = true;
+        Settings::SetFMVHack(!Settings::values.core_downcount_hack);
+    } else if (title_id == 0x0004000000068B00 || title_id == 0x0004000000061300 ||
+               title_id == 0x000400000004A700 || title_id == 0x000400000005D700) {
+        // Tales of the Abyss / Pac Man Party 3D
+        Settings::values.skip_slow_draw = true;
+    } else if (title_id == 0x000400000015CB00) {
+        // New Atelier Rorona
+        Settings::values.skip_slow_draw = true;
+    } else if (title_id == 0x000400000018E900) {
+        // My Hero Academia
+        Settings::values.skip_slow_draw = true;
+    } else if (title_id == 0x000400000016AD00) {
+        // Dragon Quest Monsters Joker 3
+        Settings::values.skip_slow_draw = true;
+    } else if (title_id == 0x00040000001ACB00) {
+        // Dragon Quest Monsters Joker 3 Professional
+        Settings::values.skip_slow_draw = true;
+    } else if (title_id == 0x000400000008FE00) {
+        // 1001 Spikes
+        Settings::SetFMVHack(!Settings::values.core_downcount_hack);
+    }
+
+    const std::array<u64, 14> core_ticks_hack_ids = {
+        0x0004000000030500, // Super Street Fighter IV: 3D Edition
+        0x0004000000032D00, // Super Street Fighter IV: 3D Edition
+        0x0004000000033C00, // Super Street Fighter IV: 3D Edition
+        0x0004000000060200, // Resident Evil: Revelations
+        0x000400000005EE00, // Resident Evil: Revelations
+        0x0004000000035900, // Resident Evil: The Mercenaries 3D
+        0x0004000000038B00, // Resident Evil: The Mercenaries 3D
+        0x00040000000C8100, // Paper Mario: Sticker Star
+        0x00040000000A5E00, // Paper Mario: Sticker Star
+        0x00040000000A5F00, // Paper Mario: Sticker Star
+        0x00040000001CCD00, // The Alliance Alive
+        0x00040000001B4500, // The Alliance Alive
+        0x0004000000120900, // Lord of Magna: Maiden Heaven
+        0x0004000000164300, // Lord of Magna: Maiden Heaven
+    };
+    for (auto id : core_ticks_hack_ids) {
+        if (title_id == id) {
+            Settings::SetFMVHack(!Settings::values.core_downcount_hack);
+            break;
+        }
+    }
+
+    const std::array<u64, 46> accurate_mul_ids = {
         0x0004000000134500, // Attack on Titan
         0x00040000000DF800, // Attack on Titan
         0x0004000000152000, // Attack on Titan
@@ -291,10 +344,6 @@ static void LoadOverrides(u64 title_id) {
         0x0004000000079600, // Jett Rocket II
         0x0004000000112600, // Cut the Rope
         0x0004000000116700, // Cut the Rope
-        0x00040000000D0000, // Luigi's Mansion: Dark Moon
-        0x0004000000076400, // Luigi's Mansion: Dark Moon
-        0x0004000000055F00, // Luigi's Mansion: Dark Moon
-        0x0004000000076500, // Luigi's Mansion: Dark Moon
         0x00040000000AFC00, // Digimon World Re:Digitize Decode
         0x0004000000125600, // The Legend of Zelda: Majoras Mask 3D
         0x0004000000125500, // The Legend of Zelda: Majoras Mask 3D

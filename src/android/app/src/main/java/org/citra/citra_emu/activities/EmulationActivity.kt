@@ -43,6 +43,7 @@ import org.citra.citra_emu.utils.EmulationLifecycleUtil
 import org.citra.citra_emu.utils.EmulationMenuSettings
 import org.citra.citra_emu.utils.ThemeUtil
 import org.citra.citra_emu.viewmodel.EmulationViewModel
+import org.citra.citra_emu.activities.TweaksDialog
 
 class EmulationActivity : AppCompatActivity() {
     private val preferences: SharedPreferences
@@ -161,6 +162,11 @@ class EmulationActivity : AppCompatActivity() {
             getString(R.string.emulation_menu_help),
             Toast.LENGTH_LONG
         ).show()
+    }
+
+    fun displayTweaksDialog() {
+        val tweaks_dialog = TweaksDialog(this)
+            tweaks_dialog.show()
     }
 
     private fun enableFullscreenImmersive() {

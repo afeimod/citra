@@ -165,6 +165,10 @@ object NativeLibrary {
      */
     external fun swapScreens(swapScreens: Boolean, rotation: Int)
 
+    external fun getTweaksDialogSettings(): IntArray
+
+    external fun setTweaksDialogSettings(settings: IntArray)
+
     external fun initializeGpuDriver(
         hookLibDir: String?,
         customDriverDir: String?,

@@ -957,6 +957,15 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             )
             add(
                 SwitchSetting(
+                    BooleanSetting.CORE_DOWNCOUNT_HACK,
+                    R.string.core_downcount_hack,
+                    R.string.core_downcount_hack_description,
+                    BooleanSetting.CORE_DOWNCOUNT_HACK.key,
+                    BooleanSetting.CORE_DOWNCOUNT_HACK.defaultValue
+                )
+            )
+            add(
+                SwitchSetting(
                     IntSetting.DEBUG_RENDERER,
                     R.string.renderer_debug,
                     R.string.renderer_debug_description,

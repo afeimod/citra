@@ -226,7 +226,7 @@ System::ResultStatus System::RunLoopSingleCore() {
         PrepareReschedule();
     } else {
         running_core->GetTimer().Advance();
-        cpu_core->Run();
+        running_core->Run();
     }
 
     if (GDBStub::IsServerEnabled()) {

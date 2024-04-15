@@ -88,12 +88,14 @@ RasterizerOpenGL::RasterizerOpenGL(Memory::MemorySystem& memory, Pica::PicaCore&
                                                               VERTEX_BUFFER_SIZE},
       uniform_buffer{driver, GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE},
       index_buffer{driver, GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE},
-      texture_buffer{driver, GL_TEXTURE_BUFFER, IsVendorMali() ?
-          (GL_MAX_TEXTURE_BUFFER_SIZE == 65536 ? 11264 : texture_buffer_size)
-          : texture_buffer_size},
-      texture_lf_buffer{driver, GL_TEXTURE_BUFFER, IsVendorMali() ?
-          (GL_MAX_TEXTURE_BUFFER_SIZE == 65536 ? 525312 : texture_buffer_size)
-          : texture_buffer_size} {
+      texture_buffer{driver, GL_TEXTURE_BUFFER,
+                     IsVendorMali()
+                         ? (GL_MAX_TEXTURE_BUFFER_SIZE == 65536 ? 11264 : texture_buffer_size)
+                         : texture_buffer_size},
+      texture_lf_buffer{driver, GL_TEXTURE_BUFFER,
+                        IsVendorMali()
+                            ? (GL_MAX_TEXTURE_BUFFER_SIZE == 65536 ? 525312 : texture_buffer_size)
+                            : texture_buffer_size} {
 
     // Clipping plane 0 is always enabled for PICA fixed clip plane z <= 0
     state.clip_distance[0] = true;

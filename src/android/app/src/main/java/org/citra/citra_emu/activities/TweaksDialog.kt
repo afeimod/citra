@@ -39,6 +39,11 @@ class TweaksDialog(context: Context) : BaseSheetDialog(context) {
         recyclerView.addItemDecoration(DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL))
     }
 
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        adapterId.saveSettings()
+    }
+
     inner class SettingsItem(
         private val settingId: Int,
         private val nameId: String,
@@ -150,16 +155,16 @@ class TweaksDialog(context: Context) : BaseSheetDialog(context) {
 
         fun saveSettings() {
             // native settings
-            var isChanged = false
+            var is_changed = false
             val new_settings = IntArray(tweaksId.size)
             for (i in tweaksId.indices) {
                 new_settings[i] = settingsId[i].getValue()
                 if (new_settings[i] != tweaksId[i]) {
-                    isChanged = true
+                    is_changed = true
                 }
             }
             // apply settings if changes are detected
-            if (isChanged) {
+            if (is_changed) {
                 NativeLibrary.setTweaksDialogSettings(new_settings)
             }
         }

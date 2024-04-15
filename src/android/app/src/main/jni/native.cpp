@@ -341,8 +341,8 @@ void Java_org_citra_citra_1emu_NativeLibrary_swapScreens([[maybe_unused]] JNIEnv
     Camera::NDK::g_rotation = rotation;
 }
 
-jintArray Java_org_citra_citra_1emu_NativeLibrary_getTweaksDialogSettings([[maybe_unused]] JNIEnv* env,
-                                                                          [[maybe_unused]] jobject obj) {
+jintArray Java_org_citra_citra_1emu_NativeLibrary_getTweaksDialogSettings(
+    [[maybe_unused]] JNIEnv* env, [[maybe_unused]] jobject obj) {
     int i = 0;
     int settings[3];
 

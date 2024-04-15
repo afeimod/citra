@@ -892,8 +892,8 @@ void System::serialize(Archive& ar, const unsigned int file_version) {
         // Re-initialize everything like it was before
         auto memory_mode = this->app_loader->LoadKernelMemoryMode();
         auto n3ds_hw_caps = this->app_loader->LoadNew3dsHwCapabilities();
-        [[maybe_unused]] const System::ResultStatus result = Init(
-            *m_emu_window, m_secondary_window, *memory_mode.first, *n3ds_hw_caps.first);
+        [[maybe_unused]] const System::ResultStatus result =
+            Init(*m_emu_window, m_secondary_window, *memory_mode.first, *n3ds_hw_caps.first);
     }
 
     // Flush on save, don't flush on load

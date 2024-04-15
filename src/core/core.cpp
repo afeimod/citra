@@ -75,7 +75,7 @@ System::System() : movie{*this}, cheat_engine{*this} {}
 
 System::~System() = default;
 
-System::ResultStatus System::RunLoop(bool tight_loop) {
+System::ResultStatus System::RunLoop() {
     status = ResultStatus::Success;
     if (!IsPoweredOn()) {
         return ResultStatus::ErrorNotInitialized;
@@ -87,16 +87,6 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
             running_core->SaveContext(thread->context);
         }
         GDBStub::HandlePacket(*this);
-
-        // If the loop is halted and we want to step, use a tiny (1) number of instructions to
-        // execute. Otherwise, get out of the loop function.
-        if (GDBStub::GetCpuHaltFlag()) {
-            if (GDBStub::GetCpuStepFlag()) {
-                tight_loop = false;
-            } else {
-                return ResultStatus::Success;
-            }
-        }
     }
 
     Signal signal{Signal::None};
@@ -147,15 +137,18 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
         break;
     }
 
+    return cpu_cores.size() > 1 ? RunLoopMultiCores() : RunLoopSingleCore();
+}
+
+System::ResultStatus System::RunLoopMultiCores() {
     // All cores should have executed the same amount of ticks. If this is not the case an event was
     // scheduled with a cycles_into_future smaller then the current downcount.
     // So we have to get those cores to the same global time first
-    u64 global_ticks = timing->GetGlobalTicks();
     s64 max_delay = 0;
     ARM_Interface* current_core_to_execute = nullptr;
     for (auto& cpu_core : cpu_cores) {
-        if (cpu_core->GetTimer().GetTicks() < global_ticks) {
-            s64 delay = global_ticks - cpu_core->GetTimer().GetTicks();
+        s64 delay = timing->GetGlobalTicks() - cpu_core->GetTimer().GetTicks();
+        if (delay > 0) {
             running_core = cpu_core.get();
             kernel->SetRunningCPU(running_core);
             cpu_core->GetTimer().Advance();
@@ -174,9 +167,6 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
     // performance. Thus we don't sync delays below min_delay
     static constexpr s64 min_delay = 100;
     if (max_delay > min_delay) {
-        LOG_TRACE(Core_ARM11, "Core {} running (delayed) for {} ticks",
-                  current_core_to_execute->GetID(),
-                  current_core_to_execute->GetTimer().GetDowncount());
         if (running_core != current_core_to_execute) {
             running_core = current_core_to_execute;
             kernel->SetRunningCPU(running_core);
@@ -186,11 +176,7 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
             current_core_to_execute->GetTimer().Idle();
             PrepareReschedule();
         } else {
-            if (tight_loop) {
-                current_core_to_execute->Run();
-            } else {
-                current_core_to_execute->Step();
-            }
+            current_core_to_execute->Run();
         }
     } else {
         // Now all cores are at the same global time. So we will run them one after the other
@@ -208,25 +194,39 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
         for (auto& cpu_core : cpu_cores) {
             cpu_core->GetTimer().SetNextSlice(max_slice);
             auto start_ticks = cpu_core->GetTimer().GetTicks();
-            LOG_TRACE(Core_ARM11, "Core {} running for {} ticks", cpu_core->GetID(),
-                      cpu_core->GetTimer().GetDowncount());
             running_core = cpu_core.get();
             kernel->SetRunningCPU(running_core);
             // If we don't have a currently active thread then don't execute instructions,
             // instead advance to the next event and try to yield to the next thread
             if (kernel->GetCurrentThreadManager().GetCurrentThread() == nullptr) {
-                LOG_TRACE(Core_ARM11, "Core {} idling", cpu_core->GetID());
                 cpu_core->GetTimer().Idle();
                 PrepareReschedule();
             } else {
-                if (tight_loop) {
-                    cpu_core->Run();
-                } else {
-                    cpu_core->Step();
-                }
+                cpu_core->Run();
             }
             max_slice = cpu_core->GetTimer().GetTicks() - start_ticks;
         }
+    }
+
+    if (GDBStub::IsServerEnabled()) {
+        GDBStub::SetCpuStepFlag(false);
+    }
+
+    Reschedule();
+
+    return status;
+}
+
+System::ResultStatus System::RunLoopSingleCore() {
+    // If we don't have a currently active thread then don't execute instructions,
+    // instead advance to the next event and try to yield to the next thread
+    if (kernel->GetCurrentThreadManager().GetCurrentThread() == nullptr) {
+        running_core->GetTimer().Idle();
+        running_core->GetTimer().Advance();
+        PrepareReschedule();
+    } else {
+        running_core->GetTimer().Advance();
+        cpu_core->Run();
     }
 
     if (GDBStub::IsServerEnabled()) {
@@ -250,7 +250,7 @@ bool System::SendSignal(System::Signal signal, u32 param) {
 }
 
 System::ResultStatus System::SingleStep() {
-    return RunLoop(false);
+    return status;
 }
 
 static void LoadOverrides(u64 title_id) {
@@ -465,12 +465,8 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
     ASSERT(memory_mode.first);
     auto n3ds_hw_caps = app_loader->LoadNew3dsHwCapabilities();
     ASSERT(n3ds_hw_caps.first);
-    u32 num_cores = 2;
-    if (Settings::values.is_new_3ds) {
-        num_cores = 4;
-    }
     ResultStatus init_result{
-        Init(emu_window, secondary_window, *memory_mode.first, *n3ds_hw_caps.first, num_cores)};
+        Init(emu_window, secondary_window, *memory_mode.first, *n3ds_hw_caps.first)};
     if (init_result != ResultStatus::Success) {
         LOG_CRITICAL(Core, "Failed to initialize system (Error {})!",
                      static_cast<u32>(init_result));
@@ -564,8 +560,13 @@ void System::Reschedule() {
 System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
                                   Frontend::EmuWindow* secondary_window,
                                   Kernel::MemoryMode memory_mode,
-                                  const Kernel::New3dsHwCapabilities& n3ds_hw_caps, u32 num_cores) {
+                                  const Kernel::New3dsHwCapabilities& n3ds_hw_caps) {
     LOG_DEBUG(HW_Memory, "initialized OK");
+
+    u32 num_cores = 1;
+    if (Settings::values.is_new_3ds) {
+        num_cores = 4;
+    }
 
     memory = std::make_unique<Memory::MemorySystem>(*this);
 
@@ -892,7 +893,7 @@ void System::serialize(Archive& ar, const unsigned int file_version) {
         auto memory_mode = this->app_loader->LoadKernelMemoryMode();
         auto n3ds_hw_caps = this->app_loader->LoadNew3dsHwCapabilities();
         [[maybe_unused]] const System::ResultStatus result = Init(
-            *m_emu_window, m_secondary_window, *memory_mode.first, *n3ds_hw_caps.first, num_cores);
+            *m_emu_window, m_secondary_window, *memory_mode.first, *n3ds_hw_caps.first);
     }
 
     // Flush on save, don't flush on load

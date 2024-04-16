@@ -16,7 +16,7 @@ import org.citra.citra_emu.R
 
 class TweaksDialog(context: Context) : BaseSheetDialog(context) {
 
-    private lateinit var adapterId: SettingsAdapter
+    private lateinit var adapter: SettingsAdapter
 
     companion object {
         // tweaks
@@ -34,32 +34,32 @@ class TweaksDialog(context: Context) : BaseSheetDialog(context) {
 
         val recyclerView: RecyclerView = findViewById(R.id.list_settings)
         recyclerView.layoutManager = LinearLayoutManager(getContext())
-        adapterId = SettingsAdapter(getContext())
-        recyclerView.adapter = adapterId
+        adapter = SettingsAdapter(getContext())
+        recyclerView.adapter = adapter
         recyclerView.addItemDecoration(DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL))
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        adapterId.saveSettings()
+    override fun onStop() {
+        super.onStop()
+        adapter.saveSettings()
     }
 
     inner class SettingsItem(
-        private val settingId: Int,
-        private val nameId: String,
-        private val typeId: Int,
+        private val setting: Int,
+        private val name: String,
+        private val type: Int,
         private var valueId: Int
     ) {
         fun getType(): Int {
-            return typeId
+            return type
         }
 
         fun getSetting(): Int {
-            return settingId
+            return setting
         }
 
         fun getName(): String {
-            return nameId
+            return name
         }
 
         fun getValue(): Int {
@@ -86,28 +86,28 @@ class TweaksDialog(context: Context) : BaseSheetDialog(context) {
 
     inner class SwitchSettingViewHolder(itemView: View) : SettingViewHolder(itemView), CompoundButton.OnCheckedChangeListener {
         private var itemId: SettingsItem? = null
-        private var textSettingNameId: TextView? = null
-        private var switchId: MaterialSwitch? = null
+        private var textSettingName: TextView? = null
+        private var switch: MaterialSwitch? = null
 
         init {
             findViews(itemView)
         }
 
         override fun findViews(root: View) {
-            textSettingNameId = root.findViewById(R.id.text_setting_name)
-            switchId = root.findViewById(R.id.switch_widget)
-            switchId?.setOnCheckedChangeListener(this)
+            textSettingName = root.findViewById(R.id.text_setting_name)
+            switch = root.findViewById(R.id.switch_widget)
+            switch?.setOnCheckedChangeListener(this)
         }
 
         override fun bind(item: SettingsItem) {
             itemId = item
-            textSettingNameId?.text = item.getName()
-            switchId?.isChecked = item.getValue() > 0
+            textSettingName?.text = item.getName()
+            switch?.isChecked = item.getValue() > 0
         }
 
         override fun onClick(clicked: View) {
-            switchId?.toggle()
-            itemId?.setValue(if (switchId?.isChecked == true) 1 else 0)
+            switch?.toggle()
+            itemId?.setValue(if (switch?.isChecked == true) 1 else 0)
         }
 
         override fun onCheckedChanged(view: CompoundButton, isChecked: Boolean) {
@@ -116,18 +116,18 @@ class TweaksDialog(context: Context) : BaseSheetDialog(context) {
     }
 
     inner class SettingsAdapter(ctx:Context) : RecyclerView.Adapter<SettingViewHolder>() {
-        private var tweaksId: IntArray
-        private var settingsId: ArrayList<SettingsItem>
+        private var tweaks: IntArray
+        private var settings: ArrayList<SettingsItem>
 
         init {
             var i = 0
-            tweaksId = NativeLibrary.getTweaksDialogSettings()
-            settingsId = ArrayList()
+            tweaks = NativeLibrary.getTweaksDialogSettings()
+            settings = ArrayList()
 
             // native settings
-            settingsId.add(SettingsItem(SETTING_CORE_TICKS_HACK, ctx.getString(R.string.setting_core_ticks_hack), TYPE_SWITCH, tweaksId[i++]))
-            settingsId.add(SettingsItem(SETTING_SKIP_SLOW_DRAW, ctx.getString(R.string.setting_skip_slow_draw), TYPE_SWITCH, tweaksId[i++]))
-            settingsId.add(SettingsItem(SETTING_SKIP_TEXTURE_COPY, ctx.getString(R.string.setting_skip_texture_copy), TYPE_SWITCH, tweaksId[i++]))
+            settings.add(SettingsItem(SETTING_CORE_TICKS_HACK, ctx.getString(R.string.setting_core_ticks_hack), TYPE_SWITCH, tweaks[i++]))
+            settings.add(SettingsItem(SETTING_SKIP_SLOW_DRAW, ctx.getString(R.string.setting_skip_slow_draw), TYPE_SWITCH, tweaks[i++]))
+            settings.add(SettingsItem(SETTING_SKIP_TEXTURE_COPY, ctx.getString(R.string.setting_skip_texture_copy), TYPE_SWITCH, tweaks[i++]))
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SettingViewHolder {
@@ -142,30 +142,30 @@ class TweaksDialog(context: Context) : BaseSheetDialog(context) {
         }
 
         override fun getItemCount(): Int {
-            return settingsId.size
+            return settings.size
         }
 
         override fun getItemViewType(position: Int): Int {
-            return settingsId[position].getType()
+            return settings[position].getType()
         }
 
         override fun onBindViewHolder(holder: SettingViewHolder, position: Int) {
-            holder.bind(settingsId[position])
+            holder.bind(settings[position])
         }
 
         fun saveSettings() {
             // native settings
-            var is_changed = false
-            val new_settings = IntArray(tweaksId.size)
-            for (i in tweaksId.indices) {
-                new_settings[i] = settingsId[i].getValue()
-                if (new_settings[i] != tweaksId[i]) {
-                    is_changed = true
+            var isChanged = false
+            val newSettings = IntArray(tweaks.size)
+            for (i in tweaks.indices) {
+                newSettings[i] = settings[i].getValue()
+                if (newSettings[i] != tweaks[i]) {
+                    isChanged = true
                 }
             }
             // apply settings if changes are detected
-            if (is_changed) {
-                NativeLibrary.setTweaksDialogSettings(new_settings)
+            if (isChanged) {
+                NativeLibrary.setTweaksDialogSettings(newSettings)
             }
         }
     }

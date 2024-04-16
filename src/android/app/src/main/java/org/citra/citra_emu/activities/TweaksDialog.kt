@@ -3,6 +3,7 @@ package org.citra.citra_emu.activities
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
@@ -39,8 +40,8 @@ class TweaksDialog(context: Context) : BaseSheetDialog(context) {
         recyclerView.addItemDecoration(DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL))
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPanelClosed(featureId: Int, menu: Menu) {
+        super.onPanelClosed(featureId, menu)
         adapter.saveSettings()
     }
 

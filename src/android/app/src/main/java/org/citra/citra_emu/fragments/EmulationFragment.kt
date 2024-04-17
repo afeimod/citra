@@ -637,6 +637,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                     true
                 }
 
+                R.id.menu_emulation_adjust_opacity -> {
+                    showAdjustOpacityDialog()
+                    true
+                }
+
                 R.id.menu_emulation_joystick_rel_center -> {
                     EmulationMenuSettings.joystickRelCenter =
                         !EmulationMenuSettings.joystickRelCenter
@@ -813,9 +818,47 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             .show()
     }
 
+    private fun showAdjustOpacityDialog() {
+        val sliderBinding = DialogSliderBinding.inflate(layoutInflater)
+
+        sliderBinding.apply {
+            slider.valueTo = 100f
+            slider.value = preferences.getInt("controlOpacity", 50).toFloat()
+            slider.addOnChangeListener(
+                Slider.OnChangeListener { slider: Slider, progress: Float, _: Boolean ->
+                    textValue.text = (progress.toInt()).toString()
+                    setControlOpacity(slider.value.toInt())
+                })
+            textValue.text = (sliderBinding.slider.value.toInt()).toString()
+            textUnits.text = "%"
+        }
+        val previousProgress = sliderBinding.slider.value.toInt()
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.emulation_control_opacity)
+            .setView(sliderBinding.root)
+            .setNegativeButton(android.R.string.cancel) { _: DialogInterface?, _: Int ->
+                setControlOpacity(previousProgress)
+            }
+            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                setControlOpacity(sliderBinding.slider.value.toInt())
+            }
+            .setNeutralButton(R.string.slider_default) { _: DialogInterface?, _: Int ->
+                setControlOpacity(50)
+            }
+            .show()
+    }
+
     private fun setControlScale(scale: Int) {
         preferences.edit()
             .putInt("controlScale", scale)
+            .apply()
+        binding.surfaceInputOverlay.refreshControls()
+    }
+
+    private fun setControlOpacity(opacity: Int) {
+        preferences.edit()
+            .putInt("controlOpacity", opacity)
             .apply()
         binding.surfaceInputOverlay.refreshControls()
     }
@@ -833,6 +876,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
     private fun resetInputOverlay() {
         preferences.edit()
             .putInt("controlScale", 50)
+            .putInt("controlOpacity", 50)
             .apply()
 
         val editor = preferences.edit()

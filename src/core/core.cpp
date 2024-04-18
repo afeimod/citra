@@ -597,22 +597,20 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
     if (Settings::values.use_cpu_jit) {
 #if CITRA_ARCH(x86_64) || CITRA_ARCH(arm64)
         for (u32 i = 0; i < num_cores; ++i) {
-            cpu_cores.push_back(std::make_shared<ARM_Dynarmic>(
-                *this, i, timing->GetTimer(i), *exclusive_monitor));
+            cpu_cores.push_back(
+                std::make_shared<ARM_Dynarmic>(*this, i, timing->GetTimer(i), *exclusive_monitor));
             kernel->GetThreadManager(i).SetCPU(cpu_cores[i].get());
         }
 #else
         for (u32 i = 0; i < num_cores; ++i) {
-            cpu_cores.push_back(
-                std::make_shared<ARM_DynCom>(this, i, timing->GetTimer(i)));
+            cpu_cores.push_back(std::make_shared<ARM_DynCom>(this, i, timing->GetTimer(i)));
             kernel->GetThreadManager(i).SetCPU(cpu_cores[i].get());
         }
         LOG_WARNING(Core, "CPU JIT requested, but Dynarmic not available");
 #endif
     } else {
         for (u32 i = 0; i < num_cores; ++i) {
-            cpu_cores.push_back(
-                std::make_shared<ARM_DynCom>(*this, i, timing->GetTimer(i)));
+            cpu_cores.push_back(std::make_shared<ARM_DynCom>(*this, i, timing->GetTimer(i)));
             kernel->GetThreadManager(i).SetCPU(cpu_cores[i].get());
         }
     }

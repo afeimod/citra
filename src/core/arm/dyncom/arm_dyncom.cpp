@@ -14,8 +14,7 @@
 
 namespace Core {
 
-ARM_DynCom::ARM_DynCom(Core::System& system_, u32 id,
-                       std::shared_ptr<Core::Timing::Timer> timer)
+ARM_DynCom::ARM_DynCom(Core::System& system_, u32 id, std::shared_ptr<Core::Timing::Timer> timer)
     : ARM_Interface(id, timer), system(system_) {
     state = std::make_unique<ARMul_State>(system, system.Memory(), USER32MODE);
 }

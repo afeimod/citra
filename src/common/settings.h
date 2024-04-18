@@ -551,6 +551,7 @@ struct Values {
     u32 core_ticks_hack;
     bool skip_slow_draw;
     bool skip_texture_copy;
+    // OpenGL Hack
     bool stream_buffer_hack;
 
     // Video Dumping

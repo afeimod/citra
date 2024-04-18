@@ -312,7 +312,7 @@ public:
     void RescheduleSingleCore();
 
     /// Gets a reference to the emulated CPU
-    ARM_Interface& GetRunningCore() {
+    [[nodiscard]] Core::ARM_Interface& GetRunningCore() {
         return *current_cpu;
     };
 

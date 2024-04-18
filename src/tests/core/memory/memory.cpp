@@ -13,7 +13,7 @@ TEST_CASE("memory.IsValidVirtualAddress", "[core][memory]") {
     Core::System system;
     Memory::MemorySystem memory{system};
     Kernel::KernelSystem kernel(
-        memory, timing, Kernel::MemoryMode::Prod, 1,
+        memory, timing, Kernel::MemoryMode::Prod,
         Kernel::New3dsHwCapabilities{false, false, Kernel::New3dsMemoryMode::Legacy});
     SECTION("these regions should not be mapped on an empty process") {
         auto process = kernel.CreateProcess(kernel.CreateCodeSet("", 0));

@@ -25,20 +25,19 @@ namespace Kernel {
 
 /// Initialize the kernel
 KernelSystem::KernelSystem(Memory::MemorySystem& memory, Core::Timing& timing,
-                           MemoryMode memory_mode, u32 num_cores,
-                           const New3dsHwCapabilities& n3ds_hw_caps, u64 override_init_time)
+                           MemoryMode memory_mode, const New3dsHwCapabilities& n3ds_hw_caps,
+                           u64 override_init_time)
     : memory(memory), timing(timing), memory_mode(memory_mode), n3ds_hw_caps(n3ds_hw_caps) {
     std::generate(memory_regions.begin(), memory_regions.end(),
                   [] { return std::make_shared<MemoryRegionInfo>(); });
     MemoryInit(memory_mode, n3ds_hw_caps.memory_mode, override_init_time);
 
     resource_limits = std::make_unique<ResourceLimitList>(*this);
-    for (u32 core_id = 0; core_id < num_cores; ++core_id) {
-        thread_managers.push_back(std::make_unique<ThreadManager>(*this, core_id));
+    for (u32 i = 0; i < thread_managers.size(); ++i) {
+        thread_managers[i] = std::make_unique<ThreadManager>(*this, i);
     }
     timer_manager = std::make_unique<TimerManager>(timing);
     ipc_recorder = std::make_unique<IPCDebugger::Recorder>();
-    stored_processes.assign(num_cores, nullptr);
 
     next_thread_id = 1;
 }

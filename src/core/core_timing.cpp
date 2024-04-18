@@ -21,13 +21,12 @@ bool Timing::Event::operator<(const Timing::Event& right) const {
     return std::tie(time, fifo_order) < std::tie(right.time, right.fifo_order);
 }
 
-Timing::Timing(std::size_t num_cores, u32 cpu_clock_percentage, s64 override_base_ticks) {
+Timing::Timing(u32 cpu_clock_percentage, s64 override_base_ticks) {
     // Generate non-zero base tick count to simulate time the system ran before launching the game.
     // This accounts for games that rely on the system tick to seed randomness.
     const auto base_ticks = override_base_ticks >= 0 ? override_base_ticks : GenerateBaseTicks();
 
-    timers.resize(num_cores);
-    for (std::size_t i = 0; i < num_cores; ++i) {
+    for (u32 i = 0; i < timers.size(); ++i) {
         timers[i] = std::make_shared<Timer>(base_ticks);
     }
     UpdateClockSpeed(cpu_clock_percentage);
@@ -177,10 +176,6 @@ u64 Timing::Timer::GetTicks() const {
 
 void Timing::Timer::AddTicks(u64 ticks) {
     downcount -= static_cast<u64>(ticks * cpu_clock_scale);
-}
-
-u64 Timing::Timer::GetIdleTicks() const {
-    return static_cast<u64>(idled_cycles);
 }
 
 void Timing::Timer::ForceExceptionCheck(s64 cycles) {

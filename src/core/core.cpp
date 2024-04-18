@@ -137,7 +137,7 @@ System::ResultStatus System::RunLoop() {
         break;
     }
 
-    return cpu_cores.size() > 1 ? RunLoopMultiCores() : RunLoopSingleCore();
+    return Settings::values.is_new_3ds ? RunLoopMultiCores() : RunLoopSingleCore();
 }
 
 System::ResultStatus System::RunLoopMultiCores() {
@@ -557,45 +557,40 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
                                   const Kernel::New3dsHwCapabilities& n3ds_hw_caps) {
     LOG_DEBUG(HW_Memory, "initialized OK");
 
-    u32 num_cores = 1;
-    if (Settings::values.is_new_3ds) {
-        num_cores = 4;
-    }
-
     memory = std::make_unique<Memory::MemorySystem>(*this);
 
-    timing = std::make_unique<Timing>(num_cores, Settings::values.cpu_clock_percentage.GetValue(),
+    timing = std::make_unique<Timing>(Settings::values.cpu_clock_percentage.GetValue(),
                                       movie.GetOverrideBaseTicks());
 
-    kernel = std::make_unique<Kernel::KernelSystem>(*memory, *timing, memory_mode, num_cores,
+    kernel = std::make_unique<Kernel::KernelSystem>(*memory, *timing, memory_mode,
                                                     n3ds_hw_caps, movie.GetOverrideInitTime());
 
+    u32 num_cores = this->GetNumCores();
     exclusive_monitor = MakeExclusiveMonitor(*memory, num_cores);
-    cpu_cores.reserve(num_cores);
     if (Settings::values.use_cpu_jit) {
 #if CITRA_ARCH(x86_64) || CITRA_ARCH(arm64)
-        for (u32 i = 0; i < num_cores; ++i) {
-            cpu_cores.push_back(
-                std::make_shared<ARM_Dynarmic>(*this, i, timing->GetTimer(i), *exclusive_monitor));
+        for (u32 i = 0; i < 4; ++i) {
+            cpu_cores[i] =
+                std::make_shared<ARM_Dynarmic>(*this, i, timing->GetTimer(i), *exclusive_monitor);
             kernel->GetThreadManager(i).SetCPU(cpu_cores[i].get());
         }
 #else
-        for (u32 i = 0; i < num_cores; ++i) {
-            cpu_cores.push_back(std::make_shared<ARM_DynCom>(this, i, timing->GetTimer(i)));
+        for (u32 i = 0; i < 4; ++i) {
+            cpu_cores[i] = std::make_shared<ARM_DynCom>(this, i, timing->GetTimer(i));
             kernel->GetThreadManager(i).SetCPU(cpu_cores[i].get());
         }
         LOG_WARNING(Core, "CPU JIT requested, but Dynarmic not available");
 #endif
     } else {
-        for (u32 i = 0; i < num_cores; ++i) {
-            cpu_cores.push_back(std::make_shared<ARM_DynCom>(*this, i, timing->GetTimer(i)));
+        for (u32 i = 0; i < 4; ++i) {
+            cpu_cores[i] = std::make_shared<ARM_DynCom>(*this, i, timing->GetTimer(i));
             kernel->GetThreadManager(i).SetCPU(cpu_cores[i].get());
         }
     }
 
     kernel->SetRunningCPU(cpu_cores[0].get());
     if (Settings::values.core_downcount_hack) {
-        SetCoreDowncountHack(true, num_cores);
+        SetCoreDowncountHack(true);
     }
 
     const auto audio_emulation = Settings::values.audio_emulation.GetValue();
@@ -735,14 +730,14 @@ void System::RegisterImageInterface(std::shared_ptr<Frontend::ImageInterface> im
     registered_image_interface = std::move(image_interface);
 }
 
-void System::SetCoreDowncountHack(bool enabled, u32 num_cores) {
+void System::SetCoreDowncountHack(bool enabled) {
     if (enabled) {
         u32 hacks[4] = {1, 4, 2, 2};
-        for (u32 i = 0; i < num_cores; ++i) {
+        for (u32 i = 0; i < 4; ++i) {
             timing->GetTimer(i)->SetDowncountHack(hacks[i]);
         }
     } else {
-        for (u32 i = 0; i < num_cores; ++i) {
+        for (u32 i = 0; i < 4; ++i) {
             timing->GetTimer(i)->SetDowncountHack(0);
         }
     }
@@ -767,7 +762,7 @@ void System::Shutdown(bool is_deserializing) {
     service_manager.reset();
     dsp_core.reset();
     kernel.reset();
-    cpu_cores.clear();
+    cpu_cores = {};
     exclusive_monitor.reset();
     timing.reset();
 

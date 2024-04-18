@@ -132,8 +132,8 @@ private:
 class KernelSystem {
 public:
     explicit KernelSystem(Memory::MemorySystem& memory, Core::Timing& timing,
-                          MemoryMode memory_mode, u32 num_cores,
-                          const New3dsHwCapabilities& n3ds_hw_caps, u64 override_init_time = 0);
+                          MemoryMode memory_mode, const New3dsHwCapabilities& n3ds_hw_caps,
+                          u64 override_init_time = 0);
     ~KernelSystem();
 
     using PortPair = std::pair<std::shared_ptr<ServerPort>, std::shared_ptr<ClientPort>>;
@@ -376,9 +376,9 @@ private:
     std::vector<std::shared_ptr<Process>> process_list;
 
     std::shared_ptr<Process> current_process;
-    std::vector<std::shared_ptr<Process>> stored_processes;
+    std::array<std::shared_ptr<Process>, 4> stored_processes;
 
-    std::vector<std::unique_ptr<ThreadManager>> thread_managers;
+    std::array<std::unique_ptr<ThreadManager>, 4> thread_managers;
 
     std::shared_ptr<ConfigMem::Handler> config_mem_handler;
     std::shared_ptr<SharedPage::Handler> shared_page_handler;

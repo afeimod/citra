@@ -473,7 +473,6 @@ private:
     };
 
     static const std::array<FunctionDef, 180> SVC_Table;
-    static const FunctionDef* GetSVCInfo(u32 func_num);
 };
 
 /// Map application or GSP heap memory
@@ -2311,33 +2310,25 @@ const std::array<SVC::FunctionDef, 180> SVC::SVC_Table{{
     {0xB3, &SVC::Wrap<&SVC::ControlProcess>, "ControlProcess"},
 }};
 
-const SVC::FunctionDef* SVC::GetSVCInfo(u32 func_num) {
-    if (func_num >= SVC_Table.size()) {
-        LOG_ERROR(Kernel_SVC, "unknown svc=0x{:02X}", func_num);
-        return nullptr;
-    }
-    return &SVC_Table[func_num];
-}
-
 MICROPROFILE_DEFINE(Kernel_SVC, "Kernel", "SVC", MP_RGB(70, 200, 70));
 
 void SVC::CallSVC(u32 immediate) {
-    MICROPROFILE_SCOPE(Kernel_SVC);
-
     // Lock the kernel mutex when we enter the kernel HLE.
     std::scoped_lock lock{kernel.GetHLELock()};
 
     DEBUG_ASSERT_MSG(kernel.GetCurrentProcess()->status == ProcessStatus::Running,
                      "Running threads from exiting processes is unimplemented");
 
-    const FunctionDef* info = GetSVCInfo(immediate);
+    if (immediate < SVC_Table.size()) {
     LOG_TRACE(Kernel_SVC, "calling {}", info->name);
-    if (info) {
-        if (info->func) {
-            (this->*(info->func))();
+    const auto& info = SVC_Table[immediate];
+        if (info.func) {
+            (this->*(info.func))();
         } else {
-            LOG_ERROR(Kernel_SVC, "unimplemented SVC function {}(..)", info->name);
+            LOG_ERROR(Kernel_SVC, "unimplemented SVC function {}(..)", info.name);
         }
+    } else {
+        LOG_ERROR(Kernel_SVC, "unknown svc=0x{:02X}", immediate);
     }
 }
 

@@ -722,7 +722,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
 
                 R.id.menu_emulation_adjust_scale_button_swap_screens -> {
                     showAdjustScaleDialog("controlScale-" + NativeLibrary.ButtonType.BUTTON_SWAP_SCREENS)
-                    showAdjustScaleDialog()
                     true
                 }
 

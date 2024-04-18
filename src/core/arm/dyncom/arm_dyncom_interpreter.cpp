@@ -916,7 +916,7 @@ static int clz(unsigned int x) {
 
 MICROPROFILE_DEFINE(DynCom_Execute, "DynCom", "Execute", MP_RGB(255, 0, 0));
 
-unsigned InterpreterMainLoop(ARMul_State* cpu) {
+unsigned InterpreterMainLoop(ARMul_State* cpu, Core::Timing::Timer* timer) {
     MICROPROFILE_SCOPE(DynCom_Execute);
 
     /// Nearest upcoming GDB code execution breakpoint, relative to the last dispatch's address.
@@ -3867,7 +3867,7 @@ SWI_INST : {
     if (inst_base->cond == ConditionCode::AL || CondPassed(cpu, inst_base->cond)) {
         swi_inst* const inst_cream = (swi_inst*)inst_base->component;
         num_instrs = std::max(num_instrs, Settings::values.core_ticks_hack);
-        cpu->system.GetRunningCore().GetTimer().AddTicks(num_instrs);
+        timer->AddTicks(num_instrs);
         cpu->NumInstrsToExecute =
             num_instrs >= cpu->NumInstrsToExecute ? 0 : cpu->NumInstrsToExecute - num_instrs;
         num_instrs = 0;

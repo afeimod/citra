@@ -121,10 +121,10 @@ public:
     Memory::MemorySystem& memory;
 };
 
-ARM_Dynarmic::ARM_Dynarmic(Core::System& system_, Memory::MemorySystem& memory_, u32 core_id_,
+ARM_Dynarmic::ARM_Dynarmic(Core::System& system_, u32 core_id_,
                            std::shared_ptr<Core::Timing::Timer> timer_,
                            Core::ExclusiveMonitor& exclusive_monitor_)
-    : ARM_Interface(core_id_, timer_), system(system_), memory(memory_),
+    : ARM_Interface(core_id_, timer_), system(system_), memory(system_.Memory()),
       cb(std::make_unique<DynarmicUserCallbacks>(*this)),
       exclusive_monitor{dynamic_cast<Core::DynarmicExclusiveMonitor&>(exclusive_monitor_)} {
     SetPageTable(memory.GetCurrentPageTable());
@@ -263,6 +263,7 @@ void ARM_Dynarmic::ClearInstructionCache() {
 
 void ARM_Dynarmic::InvalidateCacheRange(u32 start_address, std::size_t length) {
     jit->InvalidateCacheRange(start_address, length);
+    LOG_DEBUG(Core_ARM11, "arm jit invalidate cache range");
 }
 
 void ARM_Dynarmic::ClearExclusiveState() {

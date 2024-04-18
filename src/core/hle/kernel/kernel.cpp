@@ -89,13 +89,6 @@ void KernelSystem::SetCurrentMemoryPageTable(std::shared_ptr<Memory::PageTable> 
     }
 }
 
-void KernelSystem::SetCPUs(std::vector<std::shared_ptr<Core::ARM_Interface>> cpus) {
-    ASSERT(cpus.size() == thread_managers.size());
-    for (u32 i = 0; i < cpus.size(); i++) {
-        thread_managers[i]->SetCPU(*cpus[i]);
-    }
-}
-
 void KernelSystem::SetRunningCPU(Core::ARM_Interface* cpu) {
     if (current_process) {
         stored_processes[current_cpu->GetID()] = current_process;

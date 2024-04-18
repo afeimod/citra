@@ -276,8 +276,6 @@ public:
 
     void SetCurrentMemoryPageTable(std::shared_ptr<Memory::PageTable> page_table);
 
-    void SetCPUs(std::vector<std::shared_ptr<Core::ARM_Interface>> cpu);
-
     void SetRunningCPU(Core::ARM_Interface* cpu);
 
     ThreadManager& GetThreadManager(u32 core_id);

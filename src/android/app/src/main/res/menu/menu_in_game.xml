@@ -49,7 +49,7 @@
 
     <item
         android:id="@+id/menu_tweaks_dialog"
-        android:icon="@drawable/ic_settings"
+        android:icon="@drawable/ic_citra_monochrome"
         android:title="@string/tweaks_dialog_title" />
 
     <item

@@ -105,7 +105,7 @@ void SetHioRequest(Core::System& system, const VAddr addr) {
     Break();
     SetCpuHaltFlag(true);
     SetCpuStepFlag(false);
-    system.GetRunningCore().ClearInstructionCache();
+    system.Kernel().GetRunningCore().ClearInstructionCache();
 }
 
 void HandleHioReply(Core::System& system, const u8* const command_buffer,
@@ -197,7 +197,7 @@ void HandleHioReply(Core::System& system, const u8* const command_buffer,
     // Restore state from before the request came in
     SetCpuStepFlag(was_stepping);
     SetCpuHaltFlag(was_halted);
-    system.GetRunningCore().ClearInstructionCache();
+    system.Kernel().GetRunningCore().ClearInstructionCache();
 }
 
 bool HandlePendingHioRequestPacket() {

@@ -24,7 +24,7 @@ TEST_CASE("HLERequestContext::PopulateFromIncomingCommandBuffer", "[core][kernel
     Core::System system;
     Memory::MemorySystem memory{system};
     Kernel::KernelSystem kernel(
-        memory, timing, [] {}, Kernel::MemoryMode::Prod, 1,
+        memory, timing, Kernel::MemoryMode::Prod, 1,
         Kernel::New3dsHwCapabilities{false, false, Kernel::New3dsMemoryMode::Legacy});
     auto [server, client] = kernel.CreateSessionPair();
     HLERequestContext context(kernel, std::move(server), nullptr);
@@ -257,7 +257,7 @@ TEST_CASE("HLERequestContext::WriteToOutgoingCommandBuffer", "[core][kernel]") {
     Core::System system;
     Memory::MemorySystem memory{system};
     Kernel::KernelSystem kernel(
-        memory, timing, [] {}, Kernel::MemoryMode::Prod, 1,
+        memory, timing, Kernel::MemoryMode::Prod, 1,
         Kernel::New3dsHwCapabilities{false, false, Kernel::New3dsMemoryMode::Legacy});
     auto [server, client] = kernel.CreateSessionPair();
     HLERequestContext context(kernel, std::move(server), nullptr);

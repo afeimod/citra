@@ -132,9 +132,8 @@ private:
 class KernelSystem {
 public:
     explicit KernelSystem(Memory::MemorySystem& memory, Core::Timing& timing,
-                          std::function<void()> prepare_reschedule_callback, MemoryMode memory_mode,
-                          u32 num_cores, const New3dsHwCapabilities& n3ds_hw_caps,
-                          u64 override_init_time = 0);
+                          MemoryMode memory_mode, u32 num_cores,
+                          const New3dsHwCapabilities& n3ds_hw_caps, u64 override_init_time = 0);
     ~KernelSystem();
 
     using PortPair = std::pair<std::shared_ptr<ServerPort>, std::shared_ptr<ClientPort>>;
@@ -306,9 +305,16 @@ public:
     /// Adds a port to the named port table
     void AddNamedPort(std::string name, std::shared_ptr<ClientPort> port);
 
-    void PrepareReschedule() {
-        prepare_reschedule_callback();
-    }
+    void PrepareReschedule();
+
+    /// Reschedule the core emulation
+    void RescheduleMultiCores();
+    void RescheduleSingleCore();
+
+    /// Gets a reference to the emulated CPU
+    ARM_Interface& GetRunningCore() {
+        return *current_cpu;
+    };
 
     u32 NewThreadId();
 
@@ -347,8 +353,6 @@ public:
 private:
     void MemoryInit(MemoryMode memory_mode, New3dsMemoryMode n3ds_mode, u64 override_init_time);
 
-    std::function<void()> prepare_reschedule_callback;
-
     std::unique_ptr<ResourceLimitList> resource_limits;
     std::atomic<u32> next_object_id{0};
 
@@ -360,6 +364,9 @@ private:
     // TODO (wwylele): refactor the cleanup sequence to make this less complicated and sensitive.
 
     std::unique_ptr<TimerManager> timer_manager;
+
+    /// When true, signals that a reschedule should happen
+    bool reschedule_pending = false;
 
     // TODO(Subv): Start the process ids from 10 for now, as lower PIDs are
     // reserved for low-level services

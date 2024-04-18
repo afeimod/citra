@@ -166,21 +166,9 @@ public:
         return is_powered_on;
     }
 
-    /// Prepare the core emulation for a reschedule
-    void PrepareReschedule();
-
     [[nodiscard]] PerfStats::Results GetAndResetPerfStats();
 
     [[nodiscard]] PerfStats::Results GetLastPerfStats();
-
-    /**
-     * Gets a reference to the emulated CPU.
-     * @returns A reference to the emulated CPU.
-     */
-
-    [[nodiscard]] ARM_Interface& GetRunningCore() {
-        return *running_core;
-    };
 
     /**
      * Gets a reference to the emulated CPU.
@@ -364,15 +352,11 @@ private:
                                     Kernel::MemoryMode memory_mode,
                                     const Kernel::New3dsHwCapabilities& n3ds_hw_caps);
 
-    /// Reschedule the core emulation
-    void Reschedule();
-
     /// AppLoader used to load the current executing application
     std::unique_ptr<Loader::AppLoader> app_loader;
 
     /// ARM11 CPU core
     std::vector<std::shared_ptr<ARM_Interface>> cpu_cores;
-    ARM_Interface* running_core = nullptr;
 
     /// DSP core
     std::unique_ptr<AudioCore::DspInterface> dsp_core;
@@ -448,7 +432,7 @@ private:
 };
 
 [[nodiscard]] inline ARM_Interface& GetRunningCore() {
-    return System::GetInstance().GetRunningCore();
+    return System::GetInstance().Kernel().GetRunningCore();
 }
 
 [[nodiscard]] inline ARM_Interface& GetCore(u32 core_id) {

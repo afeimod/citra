@@ -159,7 +159,7 @@ ResultVal<Kernel::Handle> PLG_LDR::GetMemoryChangedHandle(Kernel::KernelSystem& 
 
     std::shared_ptr<Kernel::Event> evt =
         kernel.CreateEvent(Kernel::ResetType::OneShot,
-                           fmt::format("event-{:08x}", system.GetRunningCore().GetReg(14)));
+                           fmt::format("event-{:08x}", system.Kernel().GetRunningCore().GetReg(14)));
     R_TRY(kernel.GetCurrentProcess()->handle_table.Create(
         std::addressof(plgldr_context.memory_changed_handle), std::move(evt)));
     return plgldr_context.memory_changed_handle;

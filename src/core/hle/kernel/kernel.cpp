@@ -25,12 +25,10 @@ namespace Kernel {
 
 /// Initialize the kernel
 KernelSystem::KernelSystem(Memory::MemorySystem& memory, Core::Timing& timing,
-                           std::function<void()> prepare_reschedule_callback,
                            MemoryMode memory_mode, u32 num_cores,
                            const New3dsHwCapabilities& n3ds_hw_caps, u64 override_init_time)
     : memory(memory), timing(timing),
-      prepare_reschedule_callback(std::move(prepare_reschedule_callback)), memory_mode(memory_mode),
-      n3ds_hw_caps(n3ds_hw_caps) {
+      memory_mode(memory_mode), n3ds_hw_caps(n3ds_hw_caps) {
     std::generate(memory_regions.begin(), memory_regions.end(),
                   [] { return std::make_shared<MemoryRegionInfo>(); });
     MemoryInit(memory_mode, n3ds_hw_caps.memory_mode, override_init_time);
@@ -146,6 +144,32 @@ const IPCDebugger::Recorder& KernelSystem::GetIPCRecorder() const {
 
 void KernelSystem::AddNamedPort(std::string name, std::shared_ptr<ClientPort> port) {
     named_ports.emplace(std::move(name), std::move(port));
+}
+
+void KernelSystem::PrepareReschedule() {
+    current_cpu->PrepareReschedule();
+    reschedule_pending = true;
+}
+
+/// Reschedule the core emulation
+void KernelSystem::RescheduleMultiCores() {
+    if (!reschedule_pending) {
+        return;
+    }
+
+    reschedule_pending = false;
+    for (const auto& manager : thread_managers) {
+        manager->Reschedule();
+    }
+}
+
+void KernelSystem::RescheduleSingleCore() {
+    if (!reschedule_pending) {
+        return;
+    }
+
+    reschedule_pending = false;
+    thread_managers[0]->Reschedule();
 }
 
 u32 KernelSystem::NewThreadId() {

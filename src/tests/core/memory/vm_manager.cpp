@@ -17,7 +17,7 @@ TEST_CASE("Memory Basics", "[kernel][memory]") {
     Core::System system;
     Memory::MemorySystem memory{system};
     Kernel::KernelSystem kernel(
-        memory, timing, [] {}, Kernel::MemoryMode::Prod, 1,
+        memory, timing, Kernel::MemoryMode::Prod, 1,
         Kernel::New3dsHwCapabilities{false, false, Kernel::New3dsMemoryMode::Legacy});
     Kernel::Process process(kernel);
     SECTION("mapping memory") {

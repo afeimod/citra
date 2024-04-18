@@ -83,8 +83,8 @@ System::ResultStatus System::RunLoop() {
 
     if (GDBStub::IsServerEnabled()) {
         Kernel::Thread* thread = kernel->GetCurrentThreadManager().GetCurrentThread();
-        if (thread && running_core) {
-            running_core->SaveContext(thread->context);
+        if (thread && cpu_cores[0]) {
+            cpu_cores[0]->SaveContext(thread->context);
         }
         GDBStub::HandlePacket(*this);
     }
@@ -149,8 +149,7 @@ System::ResultStatus System::RunLoopMultiCores() {
     for (auto& cpu_core : cpu_cores) {
         s64 delay = timing->GetGlobalTicks() - cpu_core->GetTimer().GetTicks();
         if (delay > 0) {
-            running_core = cpu_core.get();
-            kernel->SetRunningCPU(running_core);
+            kernel->SetRunningCPU(cpu_core.get());
             cpu_core->GetTimer().Advance();
             cpu_core->PrepareReschedule();
             kernel->GetThreadManager(cpu_core->GetID()).Reschedule();
@@ -167,14 +166,13 @@ System::ResultStatus System::RunLoopMultiCores() {
     // performance. Thus we don't sync delays below min_delay
     static constexpr s64 min_delay = 100;
     if (max_delay > min_delay) {
-        if (running_core != current_core_to_execute) {
-            running_core = current_core_to_execute;
-            kernel->SetRunningCPU(running_core);
+        if (cpu_cores[0].get() != current_core_to_execute) {
+            kernel->SetRunningCPU(current_core_to_execute);
         }
         if (kernel->GetCurrentThreadManager().GetCurrentThread() == nullptr) {
             LOG_TRACE(Core_ARM11, "Core {} idling", current_core_to_execute->GetID());
             current_core_to_execute->GetTimer().Idle();
-            PrepareReschedule();
+            kernel->PrepareReschedule();
         } else {
             current_core_to_execute->Run();
         }
@@ -184,8 +182,7 @@ System::ResultStatus System::RunLoopMultiCores() {
         // TODO: Make special check for idle since we can easily revert the time of idle cores
         s64 max_slice = Timing::MAX_SLICE_LENGTH;
         for (const auto& cpu_core : cpu_cores) {
-            running_core = cpu_core.get();
-            kernel->SetRunningCPU(running_core);
+            kernel->SetRunningCPU(cpu_core.get());
             cpu_core->GetTimer().Advance();
             cpu_core->PrepareReschedule();
             kernel->GetThreadManager(cpu_core->GetID()).Reschedule();
@@ -194,13 +191,12 @@ System::ResultStatus System::RunLoopMultiCores() {
         for (auto& cpu_core : cpu_cores) {
             cpu_core->GetTimer().SetNextSlice(max_slice);
             auto start_ticks = cpu_core->GetTimer().GetTicks();
-            running_core = cpu_core.get();
-            kernel->SetRunningCPU(running_core);
+            kernel->SetRunningCPU(cpu_core.get());
             // If we don't have a currently active thread then don't execute instructions,
             // instead advance to the next event and try to yield to the next thread
             if (kernel->GetCurrentThreadManager().GetCurrentThread() == nullptr) {
                 cpu_core->GetTimer().Idle();
-                PrepareReschedule();
+                kernel->PrepareReschedule();
             } else {
                 cpu_core->Run();
             }
@@ -212,7 +208,7 @@ System::ResultStatus System::RunLoopMultiCores() {
         GDBStub::SetCpuStepFlag(false);
     }
 
-    Reschedule();
+    kernel->RescheduleMultiCores();
 
     return status;
 }
@@ -221,19 +217,19 @@ System::ResultStatus System::RunLoopSingleCore() {
     // If we don't have a currently active thread then don't execute instructions,
     // instead advance to the next event and try to yield to the next thread
     if (kernel->GetCurrentThreadManager().GetCurrentThread() == nullptr) {
-        running_core->GetTimer().Idle();
-        running_core->GetTimer().Advance();
-        PrepareReschedule();
+        cpu_cores[0]->GetTimer().Idle();
+        cpu_cores[0]->GetTimer().Advance();
+        kernel->PrepareReschedule();
     } else {
-        running_core->GetTimer().Advance();
-        running_core->Run();
+        cpu_cores[0]->GetTimer().Advance();
+        cpu_cores[0]->Run();
     }
 
     if (GDBStub::IsServerEnabled()) {
         GDBStub::SetCpuStepFlag(false);
     }
 
-    Reschedule();
+    kernel->RescheduleSingleCore();
 
     return status;
 }
@@ -546,11 +542,6 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
     return status;
 }
 
-void System::PrepareReschedule() {
-    running_core->PrepareReschedule();
-    reschedule_pending = true;
-}
-
 PerfStats::Results System::GetAndResetPerfStats() {
     return (perf_stats && timing) ? perf_stats->GetAndResetStats(timing->GetGlobalTimeUs())
                                   : PerfStats::Results{};
@@ -558,18 +549,6 @@ PerfStats::Results System::GetAndResetPerfStats() {
 
 PerfStats::Results System::GetLastPerfStats() {
     return perf_stats ? perf_stats->GetLastStats() : PerfStats::Results{};
-}
-
-void System::Reschedule() {
-    if (!reschedule_pending) {
-        return;
-    }
-
-    reschedule_pending = false;
-    for (const auto& core : cpu_cores) {
-        LOG_TRACE(Core_ARM11, "Reschedule core {}", core->GetID());
-        kernel->GetThreadManager(core->GetID()).Reschedule();
-    }
 }
 
 System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
@@ -588,9 +567,8 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
     timing = std::make_unique<Timing>(num_cores, Settings::values.cpu_clock_percentage.GetValue(),
                                       movie.GetOverrideBaseTicks());
 
-    kernel = std::make_unique<Kernel::KernelSystem>(
-        *memory, *timing, [this] { PrepareReschedule(); }, memory_mode, num_cores, n3ds_hw_caps,
-        movie.GetOverrideInitTime());
+    kernel = std::make_unique<Kernel::KernelSystem>(*memory, *timing, memory_mode, num_cores,
+                                                    n3ds_hw_caps, movie.GetOverrideInitTime());
 
     exclusive_monitor = MakeExclusiveMonitor(*memory, num_cores);
     cpu_cores.reserve(num_cores);
@@ -614,7 +592,6 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
             kernel->GetThreadManager(i).SetCPU(cpu_cores[i].get());
         }
     }
-    running_core = cpu_cores[0].get();
 
     kernel->SetRunningCPU(cpu_cores[0].get());
     if (Settings::values.core_downcount_hack) {

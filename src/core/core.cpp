@@ -279,9 +279,25 @@ static void LoadOverrides(u64 title_id) {
     } else if (title_id == 0x00040000001ACB00) {
         // Dragon Quest Monsters Joker 3 Professional
         Settings::values.skip_slow_draw = true;
+    } else if (title_id == 0x000400000019E700 || title_id == 0x00040000001A5600) {
+        // Armed Blue Gunvolt
+        Settings::values.stream_buffer_hack = false;
+    } else if (title_id == 0x000400000019B200 || title_id == 0x0004000000196A00 ||
+               title_id == 0x00040000001A6E00) {
+        // Armed Blue Gunvolt 2
+        Settings::values.stream_buffer_hack = false;
+    } else if (title_id == 0x0004000000149100) {
+        // Gravity Falls - Legend of the Gnome Gemulets
+        Settings::values.stream_buffer_hack = false;
+    } else if (title_id == 0x0004000000196900 || title_id == 0x0004000000119A00 ||
+               title_id == 0x000400000017C900 || title_id == 0x000400000017E100) {
+        // Shovel Knight
+        Settings::values.stream_buffer_hack = false;
     } else if (title_id == 0x000400000008FE00) {
         // 1001 Spikes
         Settings::SetFMVHack(!Settings::values.core_downcount_hack);
+        Settings::values.is_new_3ds = true;
+        Settings::values.stream_buffer_hack = false;
     }
 
     const std::array<u64, 14> core_ticks_hack_ids = {
@@ -378,7 +394,7 @@ static void LoadOverrides(u64 title_id) {
         }
     }
 
-    const std::array<u64, 30> new3ds_game_ids = {
+    const std::array<u64, 29> new3ds_game_ids = {
         0x000400000F700000, // Xenoblade Chronicles 3D [JPN]
         0x000400000F700100, // Xenoblade Chronicles 3D [USA]
         0x000400000F700200, // Xenoblade Chronicles 3D [EUR]
@@ -401,7 +417,6 @@ static void LoadOverrides(u64 title_id) {
         0x000400000008FC00, // Sonic & All-Stars Racing Transformed [EUR]
         0x00040000001B8700, // Minecraft [USA]
         0x000400000F707F00, // Hyperlight EX [USA]
-        0x000400000008FE00, // 1001 Spikes [USA]
         0x000400000007C700, // Mario Tennis Open
         0x000400000007C800, // Mario Tennis Open
         0x0004000000064D00, // Mario Tennis Open

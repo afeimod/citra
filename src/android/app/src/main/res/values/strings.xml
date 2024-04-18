@@ -332,12 +332,15 @@
     <string name="emulation_empty_state_slot">Slot %1$d</string>
     <string name="emulation_occupied_state_slot">Slot %1$d - %2$tF %2$tR</string>
     <string name="emulation_show_fps">Show FPS</string>
+    <string name="emulation_haptic_feedback">Haptic Feedback</string>
     <string name="emulation_overlay_options">Overlay Options</string>
     <string name="emulation_configure_controls">Configure Controls</string>
     <string name="emulation_edit_layout">Edit Layout</string>
     <string name="emulation_done">Done</string>
     <string name="emulation_toggle_controls">Toggle Controls</string>
     <string name="emulation_control_scale">Adjust Scale</string>
+    <string name="emulation_control_scale_global">Global Scale</string>
+    <string name="emulation_control_scale_reset_all">Reset All</string>
     <string name="emulation_control_opacity">Adjust Opacity</string>
     <string name="emulation_rotate_screen">Rotate Screen</string>
     <string name="emulation_control_joystick_rel_center">Relative Stick Center</string>
@@ -521,6 +524,7 @@
     <string name="static_noise">Static Noise</string>
     <string name="real_cubeb">Real Device (cubeb)</string>
     <string name="real_openal">Real Device (OpenAL)</string>
+    <string name="real_oboe">Real Device (Oboe)</string>
 
     <!-- Render 3D modes -->
     <string name="side_by_side">Side by Side</string>

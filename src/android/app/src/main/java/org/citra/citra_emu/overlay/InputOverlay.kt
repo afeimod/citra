@@ -85,13 +85,18 @@ class InputOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(contex
         )
     }
 
+    fun hapticFeedback(type:Int){
+        if (EmulationMenuSettings.hapticFeedback)
+            performHapticFeedback(type)
+    }
+
     override fun onTouch(v: View, event: MotionEvent): Boolean {
         if (isInEditMode) {
             return onTouchWhileEditing(event)
         }
         var shouldUpdateView = false
         for (button in overlayButtons) {
-            if (!button.updateStatus(event)) {
+            if (!button.updateStatus(event, this)) {
                 continue
             }
 
@@ -103,7 +108,7 @@ class InputOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(contex
             shouldUpdateView = true
         }
         for (dpad in overlayDpads) {
-            if (!dpad.updateStatus(event, EmulationMenuSettings.dpadSlide)) {
+            if (!dpad.updateStatus(event, EmulationMenuSettings.dpadSlide, this)) {
                 continue
             }
             NativeLibrary.onGamePadEvent(NativeLibrary.TouchScreenDevice, dpad.upId, dpad.upStatus)
@@ -125,7 +130,7 @@ class InputOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(contex
             shouldUpdateView = true
         }
         for (joystick in overlayJoysticks) {
-            if (!joystick.updateStatus(event)) {
+            if (!joystick.updateStatus(event, this)) {
                 continue
             }
             val axisID = joystick.joystickId
@@ -933,6 +938,9 @@ class InputOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(contex
             scale *= (preferences.getInt("controlScale", 50) + 50).toFloat()
             scale /= 100f
 
+            scale *= (preferences.getInt("controlScale-$buttonId", 50) + 50).toFloat()
+            scale /= 100f
+
             val opacity: Int = preferences.getInt("controlOpacity", 50) * 255 / 100
 
             // Initialize the InputOverlayDrawableButton.
@@ -989,6 +997,13 @@ class InputOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(contex
             // Decide scale based on button ID and user preference
             var scale = 0.22f
             scale *= (preferences.getInt("controlScale", 50) + 50).toFloat()
+            scale /= 100f
+
+            scale *= (preferences.getInt(
+                "controlScale-" + NativeLibrary.ButtonType.DPAD,
+                50
+            ) + 50).toFloat()
+
             scale /= 100f
 
             val opacity: Int = preferences.getInt("controlOpacity", 50) * 255 / 100
@@ -1049,6 +1064,9 @@ class InputOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(contex
             // Decide scale based on user preference
             var scale = 0.275f
             scale *= (preferences.getInt("controlScale", 50) + 50).toFloat()
+            scale /= 100f
+
+            scale *= (preferences.getInt("controlScale-$joystick", 50) + 50).toFloat()
             scale /= 100f
 
             val opacity: Int = preferences.getInt("controlOpacity", 50) * 255 / 100

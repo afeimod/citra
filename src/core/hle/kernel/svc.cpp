@@ -2320,8 +2320,8 @@ void SVC::CallSVC(u32 immediate) {
                      "Running threads from exiting processes is unimplemented");
 
     if (immediate < SVC_Table.size()) {
-    LOG_TRACE(Kernel_SVC, "calling {}", info->name);
-    const auto& info = SVC_Table[immediate];
+        LOG_TRACE(Kernel_SVC, "calling {}", info->name);
+        const auto& info = SVC_Table[immediate];
         if (info.func) {
             (this->*(info.func))();
         } else {

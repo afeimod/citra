@@ -562,8 +562,8 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
     timing = std::make_unique<Timing>(Settings::values.cpu_clock_percentage.GetValue(),
                                       movie.GetOverrideBaseTicks());
 
-    kernel = std::make_unique<Kernel::KernelSystem>(*memory, *timing, memory_mode,
-                                                    n3ds_hw_caps, movie.GetOverrideInitTime());
+    kernel = std::make_unique<Kernel::KernelSystem>(*memory, *timing, memory_mode, n3ds_hw_caps,
+                                                    movie.GetOverrideInitTime());
 
     u32 num_cores = this->GetNumCores();
     exclusive_monitor = MakeExclusiveMonitor(*memory, num_cores);

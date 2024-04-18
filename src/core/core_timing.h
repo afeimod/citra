@@ -17,12 +17,12 @@
  *   ScheduleEvent(periodInCycles - cyclesLate, callback, "whatever")
  */
 
+#include <array>
 #include <chrono>
 #include <functional>
 #include <limits>
 #include <string>
 #include <unordered_map>
-#include <array>
 #include <vector>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/vector.hpp>

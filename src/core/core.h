@@ -422,7 +422,7 @@ private:
 
     std::atomic_bool is_powered_on{};
 
-    ResultStatus status;
+    ResultStatus status = ResultStatus::Success;
     std::string status_details = "";
     /// Saved variables for reset
     Frontend::EmuWindow* m_emu_window;

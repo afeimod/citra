@@ -45,6 +45,9 @@ CIA 格式的 ROM、游戏更新和 DLC 需要分别进行安装，具体为点�
     <string name="audio_volume">音量</string>
     <string name="august">八月</string>
     <string name="australia">澳大利亚</string>
+    <string name="emulation_swap_screens">交换屏幕</string>
+    <string name="emulation_control_scale_global">全局调整</string>
+    <string name="emulation_control_scale_reset_all">重置全部</string>
     <string name="austria">奥地利</string>
     <string name="auto">自动</string>
     <string name="auto_select">自动选择</string>
@@ -587,4 +590,7 @@ CIA 格式的 ROM、游戏更新和 DLC 需要分别进行安装，具体为点�
     <string name="zambia">赞比亚</string>
     <string name="zimbabwe">津巴布韦</string>
     <string name="emulation_rotate_screen">屏幕旋转</string>
+    <string name="emulation_control_opacity">调整透明度</string>
+    <string name="emulation_control_scale">调整比例</string>
+    <string name="emulation_haptic_feedback">触摸反馈</string>
 </resources>

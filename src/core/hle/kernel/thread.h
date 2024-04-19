@@ -118,8 +118,8 @@ public:
      */
     std::span<const std::shared_ptr<Thread>> GetThreadList();
 
-    void SetCPU(Core::ARM_Interface& cpu_) {
-        cpu = &cpu_;
+    void SetCPU(Core::ARM_Interface* cpu_) {
+        cpu = cpu_;
     }
 
 private:

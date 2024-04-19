@@ -166,21 +166,9 @@ public:
         return is_powered_on;
     }
 
-    /// Prepare the core emulation for a reschedule
-    void PrepareReschedule();
-
     [[nodiscard]] PerfStats::Results GetAndResetPerfStats();
 
     [[nodiscard]] PerfStats::Results GetLastPerfStats();
-
-    /**
-     * Gets a reference to the emulated CPU.
-     * @returns A reference to the emulated CPU.
-     */
-
-    [[nodiscard]] ARM_Interface& GetRunningCore() {
-        return *running_core;
-    };
 
     /**
      * Gets a reference to the emulated CPU.
@@ -346,7 +334,7 @@ public:
     }
 
     /// Core downcount hack
-    void SetCoreDowncountHack(bool enabled, u32 num_cores);
+    void SetCoreDowncountHack(bool enabled);
 
     /// Applies any changes to settings to this core instance.
     void ApplySettings();
@@ -364,21 +352,14 @@ private:
                                     Kernel::MemoryMode memory_mode,
                                     const Kernel::New3dsHwCapabilities& n3ds_hw_caps);
 
-    /// Reschedule the core emulation
-    void Reschedule();
-
     /// AppLoader used to load the current executing application
     std::unique_ptr<Loader::AppLoader> app_loader;
 
     /// ARM11 CPU core
-    std::vector<std::shared_ptr<ARM_Interface>> cpu_cores;
-    ARM_Interface* running_core = nullptr;
+    std::array<std::shared_ptr<ARM_Interface>, 4> cpu_cores;
 
     /// DSP core
     std::unique_ptr<AudioCore::DspInterface> dsp_core;
-
-    /// When true, signals that a reschedule should happen
-    bool reschedule_pending = false;
 
     std::unique_ptr<VideoCore::GPU> gpu;
 
@@ -422,7 +403,7 @@ private:
 
     std::atomic_bool is_powered_on{};
 
-    ResultStatus status;
+    ResultStatus status = ResultStatus::Success;
     std::string status_details = "";
     /// Saved variables for reset
     Frontend::EmuWindow* m_emu_window;
@@ -448,7 +429,7 @@ private:
 };
 
 [[nodiscard]] inline ARM_Interface& GetRunningCore() {
-    return System::GetInstance().GetRunningCore();
+    return System::GetInstance().Kernel().GetRunningCore();
 }
 
 [[nodiscard]] inline ARM_Interface& GetCore(u32 core_id) {

@@ -17,6 +17,7 @@
  *   ScheduleEvent(periodInCycles - cyclesLate, callback, "whatever")
  */
 
+#include <array>
 #include <chrono>
 #include <functional>
 #include <limits>
@@ -197,7 +198,6 @@ public:
         void Idle();
 
         u64 GetTicks() const;
-        u64 GetIdleTicks() const;
 
         void AddTicks(u64 ticks);
 
@@ -254,7 +254,7 @@ public:
         friend class boost::serialization::access;
     };
 
-    explicit Timing(std::size_t num_cores, u32 cpu_clock_percentage, s64 override_base_ticks = -1);
+    explicit Timing(u32 cpu_clock_percentage, s64 override_base_ticks = -1);
 
     ~Timing(){};
 
@@ -303,7 +303,7 @@ private:
     // elements remain stable regardless of rehashes/resizing.
     std::unordered_map<std::string, TimingEventType> event_types = {};
 
-    std::vector<std::shared_ptr<Timer>> timers;
+    std::array<std::shared_ptr<Timer>, 4> timers;
     Timer* current_timer = nullptr;
 
     // When true, the event queue can't be modified. Used while deserializing to workaround

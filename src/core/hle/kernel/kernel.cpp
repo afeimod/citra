@@ -25,23 +25,19 @@ namespace Kernel {
 
 /// Initialize the kernel
 KernelSystem::KernelSystem(Memory::MemorySystem& memory, Core::Timing& timing,
-                           std::function<void()> prepare_reschedule_callback,
-                           MemoryMode memory_mode, u32 num_cores,
-                           const New3dsHwCapabilities& n3ds_hw_caps, u64 override_init_time)
-    : memory(memory), timing(timing),
-      prepare_reschedule_callback(std::move(prepare_reschedule_callback)), memory_mode(memory_mode),
-      n3ds_hw_caps(n3ds_hw_caps) {
+                           MemoryMode memory_mode, const New3dsHwCapabilities& n3ds_hw_caps,
+                           u64 override_init_time)
+    : memory(memory), timing(timing), memory_mode(memory_mode), n3ds_hw_caps(n3ds_hw_caps) {
     std::generate(memory_regions.begin(), memory_regions.end(),
                   [] { return std::make_shared<MemoryRegionInfo>(); });
     MemoryInit(memory_mode, n3ds_hw_caps.memory_mode, override_init_time);
 
     resource_limits = std::make_unique<ResourceLimitList>(*this);
-    for (u32 core_id = 0; core_id < num_cores; ++core_id) {
-        thread_managers.push_back(std::make_unique<ThreadManager>(*this, core_id));
+    for (u32 i = 0; i < thread_managers.size(); ++i) {
+        thread_managers[i] = std::make_unique<ThreadManager>(*this, i);
     }
     timer_manager = std::make_unique<TimerManager>(timing);
     ipc_recorder = std::make_unique<IPCDebugger::Recorder>();
-    stored_processes.assign(num_cores, nullptr);
 
     next_thread_id = 1;
 }
@@ -86,13 +82,6 @@ void KernelSystem::SetCurrentMemoryPageTable(std::shared_ptr<Memory::PageTable> 
     memory.SetCurrentPageTable(page_table);
     if (current_cpu != nullptr) {
         current_cpu->SetPageTable(page_table);
-    }
-}
-
-void KernelSystem::SetCPUs(std::vector<std::shared_ptr<Core::ARM_Interface>> cpus) {
-    ASSERT(cpus.size() == thread_managers.size());
-    for (u32 i = 0; i < cpus.size(); i++) {
-        thread_managers[i]->SetCPU(*cpus[i]);
     }
 }
 
@@ -153,6 +142,32 @@ const IPCDebugger::Recorder& KernelSystem::GetIPCRecorder() const {
 
 void KernelSystem::AddNamedPort(std::string name, std::shared_ptr<ClientPort> port) {
     named_ports.emplace(std::move(name), std::move(port));
+}
+
+void KernelSystem::PrepareReschedule() {
+    current_cpu->PrepareReschedule();
+    reschedule_pending = true;
+}
+
+/// Reschedule the core emulation
+void KernelSystem::RescheduleMultiCores() {
+    if (!reschedule_pending) {
+        return;
+    }
+
+    reschedule_pending = false;
+    for (const auto& manager : thread_managers) {
+        manager->Reschedule();
+    }
+}
+
+void KernelSystem::RescheduleSingleCore() {
+    if (!reschedule_pending) {
+        return;
+    }
+
+    reschedule_pending = false;
+    thread_managers[0]->Reschedule();
 }
 
 u32 KernelSystem::NewThreadId() {

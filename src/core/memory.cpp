@@ -152,7 +152,7 @@ public:
     }
 
     u32 GetPC() const noexcept {
-        return system.GetRunningCore().GetPC();
+        return system.Kernel().GetRunningCore().GetPC();
     }
 
     template <bool UNSAFE>

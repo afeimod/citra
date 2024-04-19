@@ -132,8 +132,7 @@ private:
 class KernelSystem {
 public:
     explicit KernelSystem(Memory::MemorySystem& memory, Core::Timing& timing,
-                          std::function<void()> prepare_reschedule_callback, MemoryMode memory_mode,
-                          u32 num_cores, const New3dsHwCapabilities& n3ds_hw_caps,
+                          MemoryMode memory_mode, const New3dsHwCapabilities& n3ds_hw_caps,
                           u64 override_init_time = 0);
     ~KernelSystem();
 
@@ -276,8 +275,6 @@ public:
 
     void SetCurrentMemoryPageTable(std::shared_ptr<Memory::PageTable> page_table);
 
-    void SetCPUs(std::vector<std::shared_ptr<Core::ARM_Interface>> cpu);
-
     void SetRunningCPU(Core::ARM_Interface* cpu);
 
     ThreadManager& GetThreadManager(u32 core_id);
@@ -308,9 +305,16 @@ public:
     /// Adds a port to the named port table
     void AddNamedPort(std::string name, std::shared_ptr<ClientPort> port);
 
-    void PrepareReschedule() {
-        prepare_reschedule_callback();
-    }
+    void PrepareReschedule();
+
+    /// Reschedule the core emulation
+    void RescheduleMultiCores();
+    void RescheduleSingleCore();
+
+    /// Gets a reference to the emulated CPU
+    [[nodiscard]] Core::ARM_Interface& GetRunningCore() {
+        return *current_cpu;
+    };
 
     u32 NewThreadId();
 
@@ -349,8 +353,6 @@ public:
 private:
     void MemoryInit(MemoryMode memory_mode, New3dsMemoryMode n3ds_mode, u64 override_init_time);
 
-    std::function<void()> prepare_reschedule_callback;
-
     std::unique_ptr<ResourceLimitList> resource_limits;
     std::atomic<u32> next_object_id{0};
 
@@ -363,6 +365,9 @@ private:
 
     std::unique_ptr<TimerManager> timer_manager;
 
+    /// When true, signals that a reschedule should happen
+    bool reschedule_pending = false;
+
     // TODO(Subv): Start the process ids from 10 for now, as lower PIDs are
     // reserved for low-level services
     u32 next_process_id = 10;
@@ -371,9 +376,9 @@ private:
     std::vector<std::shared_ptr<Process>> process_list;
 
     std::shared_ptr<Process> current_process;
-    std::vector<std::shared_ptr<Process>> stored_processes;
+    std::array<std::shared_ptr<Process>, 4> stored_processes;
 
-    std::vector<std::unique_ptr<ThreadManager>> thread_managers;
+    std::array<std::unique_ptr<ThreadManager>, 4> thread_managers;
 
     std::shared_ptr<ConfigMem::Handler> config_mem_handler;
     std::shared_ptr<SharedPage::Handler> shared_page_handler;

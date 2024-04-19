@@ -38,7 +38,7 @@ public:
                           ->setSampleRate(mSampleRate)
                           ->setChannelCount(2)
                           ->setCallback(this)
-                          ->openStream(mStream);
+                          ->openManagedStream(mStream);
         if (result != oboe::Result::OK) {
             LOG_CRITICAL(Audio_Sink, "Error creating playback stream: %s",
                          oboe::convertToText(result));
@@ -63,7 +63,7 @@ public:
     }
 
 private:
-    std::shared_ptr<oboe::AudioStream> mStream;
+    oboe::ManagedStream mStream;
     std::function<void(s16*, std::size_t)> mCallback;
     int32_t mSampleRate = native_sample_rate;
 };

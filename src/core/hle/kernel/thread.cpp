@@ -367,6 +367,10 @@ ResultVal<std::shared_ptr<Thread>> KernelSystem::CreateThread(
                       ErrorSummary::InvalidArgument, ErrorLevel::Permanent);
     }
 
+    if (!Settings::values.is_new_3ds) {
+        processor_id = 0;
+    }
+
     auto thread = std::make_shared<Thread>(*this, processor_id);
 
     thread_managers[processor_id]->thread_list.push_back(thread);

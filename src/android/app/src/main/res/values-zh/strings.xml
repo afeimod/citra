@@ -60,6 +60,8 @@ CIA 格式的 ROM、游戏更新和 DLC 需要分别进行安装，具体为点�
     <string name="belize">伯利兹</string>
     <string name="bermuda">百慕大群岛</string>
     <string name="bicubic">双三线过滤</string>
+    <string name="core_downcount_hack">启用cpu核心限制</string>
+    <string name="core_downcount_hack_description">启用后，模拟 CPU 使用率将被限制在较小的时间片内.</string>
     <string name="birthday">生日</string>
     <string name="birthday_day">日</string>
     <string name="birthday_month">月</string>

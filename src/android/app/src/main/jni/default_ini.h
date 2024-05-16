@@ -87,6 +87,10 @@ udp_input_port=
 udp_pad_index=
 
 [Core]
+# May reduce thermal throttling by reducing clock speed slightly.
+# 0 (default): Off, 1: On
+sustained_performance =
+
 # Whether to use the Just-In-Time (JIT) compiler for CPU emulation
 # 0: Interpreter (slow), 1 (default): JIT (fast)
 use_cpu_jit =
@@ -129,6 +133,10 @@ skip_slow_draw =
 # Skips the texture copy event from rasterizer cache.
 # 0 (default): Off, 1: On
 skip_texture_copy =
+
+# Skips the CPU write event from rasterizer cache invalidation.
+# 0 (default): Off, 1: On
+skip_cpu_write =
 
 # Overrides upscaling for dst_params
 # 0 (default): Off, 1: On
@@ -264,7 +272,7 @@ enable_dsp_lle_thread =
 # 0: No, 1 (default): Yes
 enable_audio_stretching =
 
-# Simulates the Nintendo 3DS audio for HLE
+# Scales audio playback speed to account for drops in emulation framerate
 # 0 (default): No, 1: Yes
 enable_realtime_audio =
 

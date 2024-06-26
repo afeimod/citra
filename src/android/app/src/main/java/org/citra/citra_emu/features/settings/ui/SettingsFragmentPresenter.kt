@@ -627,10 +627,17 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                 add(InputBindingSetting(button, Settings.axisTitles[i]))
             }
 
-            add(HeaderSetting(R.string.controller_dpad))
-            Settings.dPadKeys.forEachIndexed { i: Int, key: String ->
+            // TODO: Improve the integration of the two dpad types to be
+            //       less user-facingly hacky
+            add(HeaderSetting(R.string.controller_dpad_axis))
+            Settings.dPadAxisKeys.forEachIndexed { i: Int, key: String ->
                 val button = getInputObject(key)
                 add(InputBindingSetting(button, Settings.axisTitles[i]))
+            }
+            add(HeaderSetting(R.string.controller_dpad_button))
+            Settings.dPadButtonKeys.forEachIndexed { i: Int, key: String ->
+                val button = getInputObject(key)
+                add(InputBindingSetting(button, Settings.dpadTitles[i]))
             }
 
             add(HeaderSetting(R.string.controller_triggers))
@@ -687,6 +694,15 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                     BooleanSetting.SPIRV_SHADER_GEN.key,
                     BooleanSetting.SPIRV_SHADER_GEN.defaultValue,
                 )
+            )
+            add(
+                SwitchSetting(
+                    BooleanSetting.RELAXED_PRECISION_DECORATORS,
+                    R.string.relaxed_precision_decorators,
+                    R.string.relaxed_precision_decorators_desc,
+                    BooleanSetting.RELAXED_PRECISION_DECORATORS.key,
+                    BooleanSetting.RELAXED_PRECISION_DECORATORS.defaultValue,
+                )    
             )
             add(
                 SwitchSetting(

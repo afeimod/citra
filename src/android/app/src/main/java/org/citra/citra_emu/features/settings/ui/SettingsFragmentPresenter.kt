@@ -38,6 +38,7 @@ import org.citra.citra_emu.features.settings.model.view.SwitchSetting
 import org.citra.citra_emu.features.settings.utils.SettingsFile
 import org.citra.citra_emu.fragments.ResetSettingsDialogFragment
 import org.citra.citra_emu.utils.BirthdayMonth
+import org.citra.citra_emu.utils.GpuDriverHelper
 import org.citra.citra_emu.utils.Log
 import org.citra.citra_emu.utils.SystemSaveGame
 import org.citra.citra_emu.utils.ThemeUtil
@@ -108,7 +109,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             add(
                 SubmenuSetting(
                     R.string.preferences_general,
-                    R.string.preferences_general_description,
+                    0,
                     R.drawable.ic_general_settings,
                     Settings.SECTION_CORE
                 )
@@ -116,7 +117,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             add(
                 SubmenuSetting(
                     R.string.preferences_system,
-                    R.string.preferences_system_description,
+                    0,
                     R.drawable.ic_system_settings,
                     Settings.SECTION_SYSTEM
                 )
@@ -124,7 +125,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             add(
                 SubmenuSetting(
                     R.string.preferences_camera,
-                    R.string.preferences_camera_description,
+                    0,
                     R.drawable.ic_camera_settings,
                     Settings.SECTION_CAMERA
                 )
@@ -132,7 +133,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             add(
                 SubmenuSetting(
                     R.string.preferences_controls,
-                    R.string.preferences_controls_description,
+                    0,
                     R.drawable.ic_controls_settings,
                     Settings.SECTION_CONTROLS
                 )
@@ -140,7 +141,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             add(
                 SubmenuSetting(
                     R.string.preferences_graphics,
-                    R.string.preferences_graphics_description,
+                    0,
                     R.drawable.ic_graphics,
                     Settings.SECTION_RENDERER
                 )
@@ -148,7 +149,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             add(
                 SubmenuSetting(
                     R.string.preferences_audio,
-                    R.string.preferences_audio_description,
+                    0,
                     R.drawable.ic_audio,
                     Settings.SECTION_AUDIO
                 )
@@ -156,7 +157,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             add(
                 SubmenuSetting(
                     R.string.preferences_debug,
-                    R.string.preferences_debug_description,
+                    0,
                     R.drawable.ic_code,
                     Settings.SECTION_DEBUG
                 )
@@ -164,7 +165,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             add(
                 RunnableSetting(
                     R.string.reset_to_default,
-                    R.string.reset_to_default_description,
+                    0,
                     false,
                     R.drawable.ic_restore,
                     {
@@ -181,6 +182,15 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
     private fun addGeneralSettings(sl: ArrayList<SettingsItem>) {
         settingsActivity.setToolbarTitle(settingsActivity.getString(R.string.preferences_general))
         sl.apply {
+            add(
+                SwitchSetting(
+                    IntSetting.RAISE_CPU_TICKS,
+                    R.string.raise_cpu_ticks,
+                    R.string.raise_cpu_ticks_description,
+                    IntSetting.RAISE_CPU_TICKS.key,
+                    IntSetting.RAISE_CPU_TICKS.defaultValue
+                )
+            )
             add(
                 SwitchSetting(
                     IntSetting.SUSTAINED_PERFORMANCE,
@@ -778,6 +788,17 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                     IntSetting.SHADERS_ACCURATE_MUL.defaultValue
                 )
             )
+            if (GpuDriverHelper.supportsCustomDriverLoading()) {
+                add(
+                    SwitchSetting(
+                        BooleanSetting.ADRENO_GPU_BOOST,
+                        R.string.adreno_gpu_boost,
+                        R.string.adreno_gpu_boost_description,
+                        BooleanSetting.ADRENO_GPU_BOOST.key,
+                        BooleanSetting.ADRENO_GPU_BOOST.defaultValue
+                    )
+                )
+            }
             add(
                 SwitchSetting(
                     IntSetting.DISK_SHADER_CACHE,
@@ -785,15 +806,6 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                     R.string.use_disk_shader_cache_description,
                     IntSetting.DISK_SHADER_CACHE.key,
                     IntSetting.DISK_SHADER_CACHE.defaultValue
-                )
-            )
-            add(
-                SwitchSetting(
-                    BooleanSetting.FORCE_MAX_GPU_CLOCKS,
-                    R.string.force_max_gpu_clocks,
-                    R.string.force_max_gpu_clocks_description,
-                    BooleanSetting.FORCE_MAX_GPU_CLOCKS.key,
-                    BooleanSetting.FORCE_MAX_GPU_CLOCKS.defaultValue
                 )
             )
             add(
@@ -989,7 +1001,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                 SwitchSetting(
                     IntSetting.NEW_3DS,
                     R.string.new_3ds,
-                    0,
+                    R.string.new_3ds_description,
                     IntSetting.NEW_3DS.key,
                     IntSetting.NEW_3DS.defaultValue
                 )
@@ -1001,6 +1013,17 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                     0,
                     IntSetting.LLE_APPLETS.key,
                     IntSetting.LLE_APPLETS.defaultValue
+                )
+            )
+            add(
+                SingleChoiceSetting(
+                    IntSetting.FRAME_SKIP,
+                    R.string.frame_skip_name,
+                    R.string.frame_skip_description,
+                    R.array.frameSkipNames,
+                    R.array.frameSkipValues,
+                    IntSetting.FRAME_SKIP.key,
+                    IntSetting.FRAME_SKIP.defaultValue
                 )
             )
             add(
@@ -1040,15 +1063,6 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                     R.string.vsync_description,
                     IntSetting.VSYNC.key,
                     IntSetting.VSYNC.defaultValue
-                )
-            )
-            add(
-                SwitchSetting(
-                    IntSetting.RAISE_CPU_TICKS,
-                    R.string.raise_cpu_ticks,
-                    R.string.raise_cpu_ticks_description,
-                    IntSetting.RAISE_CPU_TICKS.key,
-                    IntSetting.RAISE_CPU_TICKS.defaultValue
                 )
             )
             add(

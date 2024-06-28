@@ -87,9 +87,17 @@ udp_input_port=
 udp_pad_index=
 
 [Core]
+# Sets 16000 CPU ticks.
+# 0 (default): Off, 1: On
+raise_cpu_ticks =
+
 # May reduce thermal throttling by reducing clock speed slightly.
 # 0 (default): Off, 1: On
 sustained_performance =
+
+# The applied frameskip amount. Must be a power of two.
+# 0 (default): No frameskip, 1: x2 frameskip, 2: x4 frameskip, 3: x8 frameskip, etc.
+frame_skip =
 
 # Whether to use the Just-In-Time (JIT) compiler for CPU emulation
 # 0: Interpreter (slow), 1 (default): JIT (fast)
@@ -100,10 +108,6 @@ use_cpu_jit =
 # Overclocking may fix lag that happens on console, but also comes with the risk of freezing.
 # Range is any positive integer (but we suspect 25 - 400 is a good idea) Default is 100
 cpu_clock_percentage =
-
-# Adds 16000 CPU ticks.
-# 0 (default): Off, 1: On
-raise_cpu_ticks =
 
 # Downcount will be limited to a smaller time slice.
 # 0 (default): Off, 1: On
@@ -160,8 +164,12 @@ use_shader_jit =
 use_vsync_new =
 
 # Reduce stuttering by storing and loading generated shaders to disk
-# 0: Off, 1 (default. On)
+# 0: Off, 1 (default): On
 use_disk_shader_cache =
+
+# Increases graphics throughput on supported devices, improving performance.
+# 0 (default): Off, 1: On
+adreno_gpu_boost =
 
 # Resolution scale factor
 # 0: Auto (scales resolution to window size), 1: Native 3DS screen resolution, Otherwise a scale

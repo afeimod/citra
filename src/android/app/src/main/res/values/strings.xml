@@ -169,6 +169,8 @@
     <string name="button">Button</string>
 
     <!-- Core settings strings -->
+    <string name="frame_skip_name">Frame Skip</string>
+    <string name="frame_skip_description">The number of frames to skip.\n\nWARNING: Results may vary depending on using the Vulkan or OpenGL renderer. If set too high, the screen may not render at all. Use with caution.</string>
     <string name="cpu_jit">CPU JIT</string>
     <string name="cpu_jit_description">Uses the Just-in-Time (JIT) compiler for CPU emulation. When enabled, game performance will be significantly improved.</string>
     <string name="init_clock">Clock</string>
@@ -178,6 +180,7 @@
     <!-- System settings strings -->
     <string name="username">Username</string>
     <string name="new_3ds">New 3DS Mode</string>
+    <string name="new_3ds_description">The New 3DS has different memory and processor, and some games can only start on the New 3DS.</string>
     <string name="lle_applets">Use LLE Applets (if installed)</string>
     <string name="clock">Clock</string>
     <string name="init_time">Offset Time</string>
@@ -223,8 +226,6 @@
     <string name="renderer_debug_description">Log additional graphics related debug information. When enabled, game performance will be significantly reduced.</string>
     <string name="vsync">Enable V-Sync</string>
     <string name="vsync_description">Synchronizes the game frame rate to the refresh rate of your device.</string>
-    <string name="raise_cpu_ticks">Raise CPU Ticks</string>
-    <string name="raise_cpu_ticks_description">Sets 16000 CPU ticks. May improve the performance or decrease, depending of the game or if it is a low-end device</string>
     <string name="core_downcount_hack">Enable Core Downcount Hack</string>
     <string name="core_downcount_hack_description">When enabled, core downcount will be limited to a smaller time slice, reducing CPU usage. It may reduce the performance, or might help for low-end devices or GPU hungry games</string>
     <string name="priority_boost">Enable Priority Boost</string>
@@ -247,6 +248,8 @@
     <string name="shaders_accurate_mul_description">Uses more accurate multiplication in hardware shaders, which may fix some graphical bugs. When enabled, performance will be reduced.</string>
     <string name="asynchronous_gpu">Enable asynchronous GPU emulation</string>
     <string name="asynchronous_gpu_description">Uses a separate thread to emulate the GPU asynchronously. When enabled, performance will be improved.</string>
+    <string name="raise_cpu_ticks">Raise CPU Ticks</string>
+    <string name="raise_cpu_ticks_description">Sets 16000 CPU ticks. May improve the performance or decrease, depending of the game or if it is a low-end device</string>
     <string name="sustained_performance">Enable Sustained Performance</string>
     <string name="sustained_performance_description">May reduce thermal throttling by reducing clock speed slightly. Decreases the performance.</string>
     <string name="frame_limit_enable">Limit Speed</string>
@@ -281,10 +284,8 @@
     <string name="use_shader_jit">Shader JIT</string>
     <string name="use_disk_shader_cache">Disk Shader Cache</string>
     <string name="use_disk_shader_cache_description">Reduce stuttering by storing and loading generated shaders to disk. It cannot be used without Enabling Hardware Shader.</string>
-    <string name="force_max_gpu_clocks">Force Maximum GPU Clocks (Adreno Only)</string>
-    <string name="force_max_gpu_clocks_description">Forces the GPU to run at its maximum possible clock speed (May cause excessive heating and power usage)</string>
-    <string name="force_max_gpu_clocks_desc_unsupported">Your device does not support forcing maximum GPU clocks</string>
-    <string name="force_max_gpu_clocks_unsupported">Forcing maximum GPU clocks not supported</string>
+    <string name="adreno_gpu_boost">Adreno GPU Boost (Experimental)</string>
+    <string name="adreno_gpu_boost_description">Increases graphics throughput on supported devices, improving performance. Use of this setting can increase power usage and temperature. May cause stability issues on certain devices.</string>
     <string name="utility">Utility</string>
     <string name="dump_textures">Dump Textures</string>
     <string name="dump_textures_description">Textures are dumped to dump/textures/[Title ID]/.</string>
@@ -316,7 +317,6 @@
     <string name="learn_more">Learn More</string>
     <string name="close">Close</string>
     <string name="reset_to_default">Reset to Default</string>
-    <string name="reset_to_default_description">Resets all settings</string>
     <string name="redump_games"><![CDATA[Please follow the guides to redump your <a href="https://citra-emu.org/wiki/dumping-game-cartridges/">game cartidges</a> or <a href="https://citra-emu.org/wiki/dumping-installed-titles/">installed titles</a>.]]></string>
     <string name="option_default">Default</string>
     <string name="none">None</string>
@@ -350,19 +350,12 @@
     <!-- Preferences Screen -->
     <string name="preferences_settings">Settings</string>
     <string name="preferences_general">General</string>
-    <string name="preferences_general_description">Speed Limit, Sustained Perf</string>
     <string name="preferences_system">System</string>
-    <string name="preferences_system_description">Username, Region, Language</string>
     <string name="preferences_camera">Camera</string>
-    <string name="preferences_camera_description">Camera, Flip, Camera Image Source</string>
     <string name="preferences_controls">Gamepad</string>
-    <string name="preferences_controls_description">Map controllers</string>
     <string name="preferences_graphics">Graphics</string>
-    <string name="preferences_graphics_description">Graphics API, Resolution, Textures, Tweaks</string>
     <string name="preferences_audio">Audio</string>
-    <string name="preferences_audio_description">Volume, Audio Stretching, Realtime Audio</string>
     <string name="preferences_debug">Debug</string>
-    <string name="preferences_debug_description">Advanced settings</string>
     <string name="preferences_theme">Theme and Color</string>
 
     <!-- ROM loading errors -->
@@ -597,6 +590,12 @@
     <string name="scaleforce">ScaleForce</string>
     <string name="xbrz">xBRZ</string>
     <string name="mmpx">MMPX</string>
+
+    <!-- Frame skip names -->
+    <string name="disabled">Disabled</string>
+    <string name="x2">x2</string>
+    <string name="x4">x4</string>
+    <string name="x8">x8</string>
 
     <!-- Sound output modes -->
     <string name="mono">Mono</string>
